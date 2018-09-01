@@ -24,7 +24,7 @@ build:
     - 'true'
   post_ci:
     - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker build -f Dockerfile.nginx -t 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$COMMIT .; fi'
-    - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker push 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$COMMIT .; fi'
+    - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker push 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$COMMIT ; fi'
     - 'if [ $IS_PULL_REQUEST == "false" ] ; then shipctl post_resource_state deploy-ecs-basic-image versionName $COMMIT; fi'
 
 # Integrations are used to connect external resources to CI
