@@ -10,13 +10,6 @@ language: node_js
 
 # using pre-defined build variables
 # full list http://docs.shippable.com/ci/advancedOptions/environmentVariables/
-env:
-  global:
-    - TEST_RESULTS_DIR=$SHIPPABLE_REPO_DIR/shippable/testresults
-    - CODE_COVERAGE_DIR=$SHIPPABLE_REPO_DIR/shippable/codecoverage
-    - TESTS_LOC_DIR=$SHIPPABLE_REPO_DIR/tests
-    - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
-    
 
 build:
   # http://docs.shippable.com/ci/shippableyml/#ci
@@ -71,9 +64,8 @@ resources:
     type: cluster
     integration: aws
     pointer:
-      sourceName : "microservice-production" #name of the cluster to which we are deploying
+      sourceName : "microservices-production" #name of the cluster to which we are deploying
       region: "eu-west-1"
-
 
 jobs:
   - name: deploy-ecs-basic_runCI
