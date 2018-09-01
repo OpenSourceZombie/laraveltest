@@ -35,6 +35,7 @@ integrations:
   hub:
     - integrationName: aws
       type: amazonKeys
+      region: eu-west-1
 
 
 resources:
