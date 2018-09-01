@@ -15,4 +15,5 @@ build:
 integrations:
   hub:
     - integrationName: aws-keys-integration 
+      region: eu-west-1
       type: ecr
