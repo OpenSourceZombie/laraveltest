@@ -71,6 +71,7 @@ jobs:
   - name: deploy-ecs-basic_runCI
     type: runCI
     steps:
+      - IN: runCI
       - OUT: deploy-ecs-basic-image
 
   - name: deploy-ecs-basic-manifest
