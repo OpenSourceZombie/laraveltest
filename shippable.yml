@@ -30,7 +30,6 @@ integrations:
       type: amazonKeys
       region: eu-west-1
 
-
 resources:
   - name: deploy-ecs-basic-image
     type: image
