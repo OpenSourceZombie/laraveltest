@@ -1,19 +1,102 @@
-language: none
+# Language setting http://docs.shippable.com/ci/languages/node/
+language: node_js
+
+# # use this to control what branches get built.
+# # http://docs.shippable.com/ci/advancedOptions/branches/
+# branches:
+#   only:
+#     - master
+
+
+# using pre-defined build variables
+# full list http://docs.shippable.com/ci/advancedOptions/environmentVariables/
+env:
+  global:
+    - TEST_RESULTS_DIR=$SHIPPABLE_REPO_DIR/shippable/testresults
+    - CODE_COVERAGE_DIR=$SHIPPABLE_REPO_DIR/shippable/codecoverage
+    - TESTS_LOC_DIR=$SHIPPABLE_REPO_DIR/tests
+    - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
+    
 
 build:
+
+  # http://docs.shippable.com/ci/shippableyml/#ci
   ci:
-    - echo 'CI Running'
-    - export IMAGE_NAME1=050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx
-    - export IMAGE_NAME2=050543387869.dkr.ecr.eu-west-1.amazonaws.com/laravel
-    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker build -f Dockerfile.nginx -t $IMAGE_NAME1:$COMMIT .; fi
-    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker build -f code/Dockerfile -t $IMAGE_NAME2:$COMMIT code/; fi
-
+    # npm mirrors can sometimes be flacky, better to use shippable_retry
+    # http://docs.shippable.com/ci/advancedOptions/retry/
+    - true
+  # http://docs.shippable.com/ci/shippableyml/#post_ci
   post_ci:
-    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker push $IMAGE_NAME1:$COMMIT; fi
-    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker push $IMAGE_NAME2:$COMMIT; fi
+    - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker build -t 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$COMMIT .; fi'
+    - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker push 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$COMMIT .; fi'
+    - 'if [ $IS_PULL_REQUEST == "false" ] ; then shipctl post_resource_state deploy-ecs-basic-image versionName $COMMIT; fi'
 
+# Integrations are used to connect external resources to CI
+# http://docs.shippable.com/integrations/overview/
 integrations:
+  # adding awsKeys integration so that credentials are available to CI Job
+  # http://docs.shippable.com/platform/integration/aws-keys/
   hub:
-    - integrationName: aws-keys-integration 
-      region: eu-west-1
-      type: ecr
+    - integrationName: aws
+      type: amazonKeys
+
+
+resources:
+  - name: deploy-ecs-basic-image
+    type: image
+    integration: aws
+    pointer:
+      sourceName: "050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx"
+    seed:
+      versionName: "latest"
+
+  - name: deploy-ecs-basic-params
+    type: params
+    version:
+      params:
+        ENVIRONMENT: "dev"
+
+  - name: deploy-ecs-basic-docker-options
+    type: dockerOptions
+    versionTemplate:
+      linuxParameters:
+        initProcessEnabled: true
+      memory: 100
+      portMappings:
+        - 80:80
+
+  - name: deploy-ecs-basic-replicas
+    type: replicas
+    version:
+      count: 1
+
+  - name: deploy-ecs-basic-ecs-cluster
+    type: cluster
+    integration: dr-aws-keys
+    pointer:
+      sourceName : "microservice-production" #name of the cluster to which we are deploying
+      region: "eu-west-1"
+
+
+jobs:
+  - name: deploy-ecs-basic_runCI
+    type: runCI
+    steps:
+      - OUT: deploy-ecs-basic-image
+
+  - name: deploy-ecs-basic-manifest
+    type: manifest
+    steps:
+     - IN: deploy-ecs-basic-image
+     - IN: deploy-ecs-basic-docker-options
+     - IN: deploy-ecs-basic-params
+     - IN: deploy-ecs-basic-replicas
+
+  - name: deploy-ecs-basic-deploy
+    type: deploy
+    steps:
+      - IN: deploy-ecs-basic-manifest
+      - IN: deploy-ecs-basic-ecs-cluster
+      - TASK: managed
+        deployMethod: replace
+
