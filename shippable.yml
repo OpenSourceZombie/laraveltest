@@ -6,7 +6,7 @@ build:
     - export IMAGE_NAME1=050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx
     - export IMAGE_NAME2=050543387869.dkr.ecr.eu-west-1.amazonaws.com/laravel
     - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker build -f Dockerfile.nginx -t $IMAGE_NAME1:$BRANCH.$BUILD_NUMBER .; fi
-    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker build -t -f code/Dockerfile $IMAGE_NAME2:$BRANCH.$BUILD_NUMBER code/; fi
+    - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker build -f code/Dockerfile -t $IMAGE_NAME2:$BRANCH.$BUILD_NUMBER code/; fi
 
   post_ci:
     - if [ "$IS_PULL_REQUEST" == false ]; then sudo docker push $IMAGE_NAME1:$BRANCH.$BUILD_NUMBER; fi
