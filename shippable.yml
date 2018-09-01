@@ -18,7 +18,7 @@ build:
   post_ci:
     - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker build -f Dockerfile.nginx -t 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$BRANCH.$BUILD_NUMBER .; fi'
     - 'if [ $IS_PULL_REQUEST == "false" ] ; then docker push 050543387869.dkr.ecr.eu-west-1.amazonaws.com/nginx:$BRANCH.$BUILD_NUMBER ; fi'
-    - 'if [ $IS_PULL_REQUEST == "false" ] ; then shipctl post_resource_state deploy-ecs-basic-image versionName $BRANCH.$BUILD_NUMBER; fi'
+    - 'if [ $IS_PULL_REQUEST == "false" ] ; then shipctl post_resource_state deploy-ecs-basic-image versionName $BRANCH.$BUILD_NUMBER.$COMMIT; fi'
 
 # Integrations are used to connect external resources to CI
 # http://docs.shippable.com/integrations/overview/
@@ -71,7 +71,6 @@ jobs:
   - name: deploy-ecs-basic_runCI
     type: runCI
     steps:
-      - IN: runCI
       - OUT: deploy-ecs-basic-image
 
   - name: deploy-ecs-basic-manifest
