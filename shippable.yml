@@ -69,7 +69,7 @@ resources:
 
   - name: deploy-ecs-basic-ecs-cluster
     type: cluster
-    integration: dr-aws-keys
+    integration: aws
     pointer:
       sourceName : "microservice-production" #name of the cluster to which we are deploying
       region: "eu-west-1"
